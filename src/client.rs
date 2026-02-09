@@ -159,6 +159,31 @@ pub async fn send_message(
         return Ok(grant);
     }
 
+    if grant_status == 4 {
+        if let Some(counter_proposal) = grant.payload.get("counter") {
+            eprintln!("Negotiation requested:");
+            eprintln!("{}", serde_json::to_string_pretty(counter_proposal)?);
+            eprintln!("Note: Negotiation requires manual intervention.");
+            eprintln!("Rejecting request.");
+        }
+
+        counter += 1;
+        let thank_payload = build_thank_payload(2, true, None);
+        send_encrypted_message(
+            &mut stream,
+            Stage::Thank,
+            &session_key,
+            counter,
+            my_id,
+            peer_id,
+            thank_payload,
+        )
+        .await?;
+
+        crypto::zeroize_key(&mut session_key);
+        return Ok(grant);
+    }
+
     let mut gift: Option<Message> = None;
     loop {
         let msg = receive_encrypted_message(&mut stream, &session_key, &mut counter, peer_id, my_id).await?;
@@ -200,7 +225,7 @@ pub async fn send_message(
 fn create_tls_connector() -> Result<TlsConnector> {
     let mut root_store = rustls::RootCertStore::empty();
 
-    let ca_path = shellexpand::tilde("~/.wish/ca.pem").into_owned();
+    let ca_path = shellexpand::tilde("~/.wishp/ca.pem").into_owned();
     if std::path::Path::new(&ca_path).exists() {
         let file = std::fs::File::open(&ca_path)?;
         let mut reader = std::io::BufReader::new(file);

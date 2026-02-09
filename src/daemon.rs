@@ -1,8 +1,10 @@
 use crate::crypto;
+use crate::keyring::Keyring;
 use crate::protocol::{self, Message, Stage, PROTOCOL_VERSION};
 use anyhow::{anyhow, Result};
 use std::collections::HashMap;
 use std::io::Write;
+use std::path::PathBuf;
 use std::process::{Command, Stdio};
 use std::sync::{Arc, Mutex};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
@@ -175,6 +177,9 @@ pub async fn start_server(config: Config) -> Result<()> {
     let certs = load_certs(&config.keys.cert_path)?;
     let key = load_key(&config.keys.key_path)?;
 
+    let keyring_path = shellexpand::tilde(&config.keys.keyring_path).into_owned();
+    let keyring = Arc::new(Mutex::new(Keyring::load(PathBuf::from(keyring_path))?));
+
     let config_arc = Arc::new(config);
     let blocklist = Arc::new(Mutex::new(Blocklist::new()));
     let rate_limiter = Arc::new(Mutex::new(RateLimiter::new()));
@@ -194,6 +199,7 @@ pub async fn start_server(config: Config) -> Result<()> {
         let config_clone = config_arc.clone();
         let blocklist_clone = blocklist.clone();
         let rate_limiter_clone = rate_limiter.clone();
+        let keyring_clone = keyring.clone();
 
         tokio::spawn(async move {
             match acceptor.accept(stream).await {
@@ -203,6 +209,7 @@ pub async fn start_server(config: Config) -> Result<()> {
                         &config_clone,
                         blocklist_clone,
                         rate_limiter_clone,
+                        keyring_clone,
                     ).await {
                         eprintln!("Error handling connection from {}: {}", peer_addr, e);
                     }
@@ -236,6 +243,7 @@ async fn handle_connection<S>(
     config: &Config,
     blocklist: Arc<Mutex<Blocklist>>,
     rate_limiter: Arc<Mutex<RateLimiter>>,
+    _keyring: Arc<Mutex<Keyring>>,
 ) -> Result<()>
 where
     S: AsyncReadExt + AsyncWriteExt + Unpin,
