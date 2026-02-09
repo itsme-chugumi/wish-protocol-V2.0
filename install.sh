@@ -85,7 +85,7 @@ fi
 # 5. Create directories
 echo ""
 echo "Creating configuration directories..."
-mkdir -p ~/.wishp/keys
+mkdir -p ~/.wish-protocol/keys
 
 echo -e "${GREEN}✓ Directories created${NC}"
 
@@ -109,8 +109,8 @@ echo "================================================"
 echo ""
 echo "Next steps:"
 echo "1. Generate keys:        wishp keygen"
-echo "2. Create config:        nano ~/.wishp/config.toml"
-echo "3. Create handler:       nano ~/.wishp/handler"
+echo "2. Create config:        nano ~/.wish-protocol/config.toml"
+echo "3. Create handler:       nano ~/.wish-protocol/handler"
 echo "4. Start daemon:         wishp daemon"
 echo ""
 echo "For detailed instructions, see:"
@@ -118,5 +118,5 @@ echo "  README_FOR_AGENTS.md"
 echo ""
 echo "To uninstall:"
 echo "  sudo rm /usr/local/bin/wishp"
-echo "  rm -rf ~/.wishp"
+echo "  rm -rf ~/.wish-protocol"
 echo ""

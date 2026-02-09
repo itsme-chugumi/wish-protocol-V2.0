@@ -225,7 +225,7 @@ pub async fn send_message(
 fn create_tls_connector() -> Result<TlsConnector> {
     let mut root_store = rustls::RootCertStore::empty();
 
-    let ca_path = shellexpand::tilde("~/.wishp/ca.pem").into_owned();
+    let ca_path = shellexpand::tilde("~/.wish-protocol/ca.pem").into_owned();
     if std::path::Path::new(&ca_path).exists() {
         let file = std::fs::File::open(&ca_path)?;
         let mut reader = std::io::BufReader::new(file);

@@ -76,7 +76,7 @@ async fn main() -> Result<()> {
 }
 
 fn load_config() -> Result<Config> {
-    let config_path = shellexpand::tilde("~/.wishp/config.toml").into_owned();
+    let config_path = shellexpand::tilde("~/.wish-protocol/config.toml").into_owned();
     if std::path::Path::new(&config_path).exists() {
         let content = std::fs::read_to_string(config_path)?;
         let config: Config = toml::from_str(&content)?;
@@ -94,11 +94,11 @@ fn load_config() -> Result<Config> {
             path: "./mock_openclaw.sh".to_string(),
         },
         keys: KeysConfig {
-            private_key_path: "~/.wishp/keys/private.key".to_string(),
-            public_key_path: "~/.wishp/keys/public.key".to_string(),
-            keyring_path: "~/.wishp/keyring.msgpack".to_string(),
-            cert_path: "~/.wishp/cert.pem".to_string(),
-            key_path: "~/.wishp/key.pem".to_string(),
+            private_key_path: "~/.wish-protocol/keys/private.key".to_string(),
+            public_key_path: "~/.wish-protocol/keys/public.key".to_string(),
+            keyring_path: "~/.wish-protocol/keyring.msgpack".to_string(),
+            cert_path: "~/.wish-protocol/cert.pem".to_string(),
+            key_path: "~/.wish-protocol/key.pem".to_string(),
         },
     })
 }
@@ -116,7 +116,7 @@ fn handle_keygen() -> Result<()> {
 
     let keys_dir = dirs::home_dir()
         .ok_or_else(|| anyhow::anyhow!("Cannot determine home directory"))?
-        .join(".wishp/keys");
+        .join(".wish-protocol/keys");
     std::fs::create_dir_all(&keys_dir)?;
 
     std::fs::write(keys_dir.join("private.key"), private.to_bytes())?;
@@ -127,12 +127,12 @@ fn handle_keygen() -> Result<()> {
     let hash = hasher.finalize();
     let fingerprint = hex::encode(&hash[..4]);
 
-    println!("✓ Keys saved to ~/.wishp/keys/");
+    println!("✓ Keys saved to ~/.wish-protocol/keys/");
     println!();
     println!("Your agent ID: yourname-{}", fingerprint);
     println!("Example: nono-{}", fingerprint);
     println!();
-    println!("Next: Add to ~/.wishp/config.toml:");
+    println!("Next: Add to ~/.wish-protocol/config.toml:");
     println!("[agent]");
     println!("id = \"yourname-{}\"", fingerprint);
     println!();
@@ -161,7 +161,7 @@ fn handle_add_peer(agent_id: String, public_key: String) -> Result<()> {
 
     let keyring_path = dirs::home_dir()
         .ok_or_else(|| anyhow::anyhow!("Cannot determine home directory"))?
-        .join(".wishp/keyring.msgpack");
+        .join(".wish-protocol/keyring.msgpack");
 
     let mut keyring = keyring::Keyring::load(keyring_path)?;
     keyring.add(agent_id.clone(), key_array)?;
@@ -174,7 +174,7 @@ fn handle_add_peer(agent_id: String, public_key: String) -> Result<()> {
 fn handle_list_peers() -> Result<()> {
     let keyring_path = dirs::home_dir()
         .ok_or_else(|| anyhow::anyhow!("Cannot determine home directory"))?
-        .join(".wishp/keyring.msgpack");
+        .join(".wish-protocol/keyring.msgpack");
 
     let keyring = keyring::Keyring::load(keyring_path)?;
     let entries = keyring.list();
@@ -209,14 +209,14 @@ fn handle_gencert() -> Result<()> {
 
     let cert_dir = dirs::home_dir()
         .ok_or_else(|| anyhow::anyhow!("Cannot determine home directory"))?
-        .join(".wishp");
+        .join(".wish-protocol");
     std::fs::create_dir_all(&cert_dir)?;
 
     std::fs::write(cert_dir.join("cert.pem"), cert_pem)?;
     std::fs::write(cert_dir.join("key.pem"), key_pem)?;
 
-    println!("✓ Certificate saved to ~/.wishp/cert.pem");
-    println!("✓ Private key saved to ~/.wishp/key.pem");
+    println!("✓ Certificate saved to ~/.wish-protocol/cert.pem");
+    println!("✓ Private key saved to ~/.wish-protocol/key.pem");
 
     Ok(())
 }

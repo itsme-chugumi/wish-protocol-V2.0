@@ -35,7 +35,7 @@ This will:
 2. Clone the repository
 3. Build the program
 4. Install to `/usr/local/bin/wishp`
-5. Create `~/.wishp/` directories
+5. Create `~/.wish-protocol/` directories
 
 **Option B: Manual Installation**
 
@@ -55,7 +55,7 @@ sudo cp target/release/wishp /usr/local/bin/
 
 ```bash
 # Create config directory
-mkdir -p ~/.wishp/keys
+mkdir -p ~/.wish-protocol/keys
 
 # Generate keypair (you'll implement this)
 wishp keygen
@@ -74,8 +74,8 @@ fn main() {
     let public = PublicKey::from(&private);
     
     // Save keys
-    fs::write("~/.wishp/keys/private.key", private.to_bytes()).unwrap();
-    fs::write("~/.wishp/keys/public.key", public.as_bytes()).unwrap();
+    fs::write("~/.wish-protocol/keys/private.key", private.to_bytes()).unwrap();
+    fs::write("~/.wish-protocol/keys/public.key", public.as_bytes()).unwrap();
     
     // Generate agent ID
     let hash = sha256(public.as_bytes());
@@ -87,7 +87,7 @@ fn main() {
 ### Step 3: Create Configuration
 
 ```toml
-# ~/.wishp/config.toml
+# ~/.wish-protocol/config.toml
 [agent]
 id = "nono-a3f28c91"  # Replace with your actual ID
 
@@ -98,9 +98,9 @@ listen_port = 7779
 path = "/usr/local/bin/openclaw"  # Or your agent's path
 
 [keys]
-private_key_path = "~/.wishp/keys/private.key"
-public_key_path = "~/.wishp/keys/public.key"
-keyring_path = "~/.wishp/keyring.msgpack"
+private_key_path = "~/.wish-protocol/keys/private.key"
+public_key_path = "~/.wish-protocol/keys/public.key"
+keyring_path = "~/.wish-protocol/keyring.msgpack"
 ```
 
 ### Step 4: Exchange Public Keys
@@ -131,7 +131,7 @@ Methods:
 
 **This is the most important part - your agent logic.**
 
-Create `~/.wishp/handler` (or any path, update config):
+Create `~/.wish-protocol/handler` (or any path, update config):
 
 ```python
 #!/usr/bin/env python3
@@ -252,7 +252,7 @@ if __name__ == "__main__":
 **Make it executable:**
 
 ```bash
-chmod +x ~/.wishp/handler
+chmod +x ~/.wish-protocol/handler
 ```
 
 ### Step 6: Start Daemon
@@ -341,7 +341,7 @@ private_key = x25519.X25519PrivateKey.generate()
 public_key = private_key.public_key()
 
 # Save to files
-with open(os.path.expanduser("~/.wishp/keys/private.key"), "wb") as f:
+with open(os.path.expanduser("~/.wish-protocol/keys/private.key"), "wb") as f:
     f.write(private_key.private_bytes(...))
 ```
 
@@ -494,8 +494,8 @@ All messages are **MessagePack encoded** and **length-prefixed**:
 ### Handler not responding
 
 - Check handler path in config
-- Check handler is executable: `ls -l ~/.wishp/handler`
-- Test handler manually: `echo '{"stage":1,...}' | ~/.wishp/handler`
+- Check handler is executable: `ls -l ~/.wish-protocol/handler`
+- Test handler manually: `echo '{"stage":1,...}' | ~/.wish-protocol/handler`
 
 ---
 
@@ -519,7 +519,7 @@ Commands::Keygen => {
     let public = PublicKey::from(&private);
     
     // Save keys
-    let keys_dir = dirs::home_dir().unwrap().join(".wishp/keys");
+    let keys_dir = dirs::home_dir().unwrap().join(".wish-protocol/keys");
     std::fs::create_dir_all(&keys_dir)?;
     
     std::fs::write(keys_dir.join("private.key"), private.to_bytes())?;
@@ -531,7 +531,7 @@ Commands::Keygen => {
     
     println!("Keys generated!");
     println!("Your agent ID: yourname-{}", fingerprint);
-    println!("Keys saved to: ~/.wishp/keys/");
+    println!("Keys saved to: ~/.wish-protocol/keys/");
 }
 ```
 
@@ -585,13 +585,13 @@ cargo build --release
 sudo cp target/release/wishp /usr/local/bin/
 
 # 2. Create directories
-mkdir -p ~/.wishp/keys
+mkdir -p ~/.wish-protocol/keys
 
 # 3. Generate keys (you'll implement this in wishp keygen)
 wishp keygen
 
 # 4. Create config
-cat > ~/.wishp/config.toml << 'EOF'
+cat > ~/.wish-protocol/config.toml << 'EOF'
 [agent]
 id = "REPLACE_WITH_YOUR_ID"
 
@@ -602,13 +602,13 @@ listen_port = 7779
 path = "/usr/local/bin/openclaw"
 
 [keys]
-private_key_path = "~/.wishp/keys/private.key"
-public_key_path = "~/.wishp/keys/public.key"
-keyring_path = "~/.wishp/keyring.msgpack"
+private_key_path = "~/.wish-protocol/keys/private.key"
+public_key_path = "~/.wish-protocol/keys/public.key"
+keyring_path = "~/.wish-protocol/keyring.msgpack"
 EOF
 
 # 5. Create handler (modify for your agent)
-cat > ~/.wishp/handler << 'EOF'
+cat > ~/.wish-protocol/handler << 'EOF'
 #!/usr/bin/env python3
 import sys, json
 message = json.loads(sys.stdin.read())
@@ -616,7 +616,7 @@ message = json.loads(sys.stdin.read())
 print(json.dumps({"action": "accept"}))
 EOF
 
-chmod +x ~/.wishp/handler
+chmod +x ~/.wish-protocol/handler
 
 # 6. Install systemd service
 sudo cat > /etc/systemd/system/wishp.service << 'EOF'
@@ -640,8 +640,8 @@ sudo systemctl start wishp
 
 echo "Setup complete!"
 echo "Next steps:"
-echo "1. Edit ~/.wishp/config.toml with your agent ID"
-echo "2. Implement ~/.wishp/handler with your logic"
+echo "1. Edit ~/.wish-protocol/config.toml with your agent ID"
+echo "2. Implement ~/.wish-protocol/handler with your logic"
 echo "3. Exchange public keys with other agents"
 echo "4. Test: echo '{...}' | wishp send <agent-id>@<host>"
 ```
